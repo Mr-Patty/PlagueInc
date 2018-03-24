@@ -1,0 +1,46 @@
+name:                PlagueInc
+version:             0.1.0.0
+synopsis:            PlagueInx system
+description:    Please see the README on Github at <https://github.com/Mr-Patty/PlagueInc#readme>
+homepage:       https://github.com/Mr-Patty/PlagueInc#readme
+bug-reports:    https://github.com/Mr-Patty/PlagueInc/issues
+author:         Oleg Shevchenko
+maintainer:     shevhcenko.cmc@gmail.com
+copyright:      2018 Oleg Shevchenko
+license:        BSD3
+license-file:   LICENSE
+category:            Web
+build-type:          Simple
+cabal-version:       >=1.10
+
+source-repository head
+  type: git
+  location: https://github.com/Mr-Patty/PlagueInc
+
+library
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , time
+    , miso
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_PlagueInc
+  default-language: Haskell2010
+
+
+executable PlagueInc
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      PlagueInc
+    , base >=4.7 && <5
+    , time
+    , miso
+  other-modules:
+      Paths_PlagueInc
+  default-language: Haskell2010
