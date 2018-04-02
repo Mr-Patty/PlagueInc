@@ -1,4 +1,4 @@
-module SettingsScreen.State where
+module Settings.State where
 
 
   -- | Miso framework import
@@ -15,6 +15,16 @@ data State = State
   time :: Int,
   price :: Float,
   fond :: Double
+  , cities :: [City]
+  }
+  deriving (Eq, Show)
+
+data City = City
+  {
+  population :: Int,
+  seek :: Double,
+  priv :: Float,
+  trans :: Float
   }
   deriving (Eq, Show)
 
@@ -55,4 +65,5 @@ initDefault time = State
   , time = 0
   , price = 0.0
   , fond = 0.0
+  , cities = []
   }

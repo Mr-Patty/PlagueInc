@@ -9,9 +9,9 @@ import Miso
 import Miso.String
 import Data.Time.Clock
 
-import qualified SettingsScreen.State as State
-import qualified SettingsScreen.Update as Update
-import qualified SettingsScreen.Render as Render
+import qualified Program.State as State
+import qualified Program.Update as Update
+import qualified Program.Render as Render
 
 
 start :: IO ()

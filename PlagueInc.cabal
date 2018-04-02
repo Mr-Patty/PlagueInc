@@ -32,9 +32,11 @@ library
     , Mario
     , Program.Update
     , Program.Start
-    , SettingsScreen.Update
-    , SettingsScreen.State
-    , SettingsScreen.Render
+    , Program.Render
+    , Program.State
+    , Settings.Update
+    , Settings.State
+    , Settings.Render
   other-modules:
       Paths_PlagueInc
   default-language: Haskell2010
