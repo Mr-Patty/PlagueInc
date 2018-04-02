@@ -27,9 +27,6 @@ library
     , containers
   exposed-modules:
       Lib
-    , Sample
-    , Canvas
-    , Mario
     , Program.Update
     , Program.Start
     , Program.Render
