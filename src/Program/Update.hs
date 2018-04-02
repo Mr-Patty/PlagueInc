@@ -19,7 +19,8 @@ update :: Action -> State.State -> Effect Action State.State
 update (SettingsScreen action) state =
   case (State.screen state) of
     State.SettingsScreen settingsScreen ->
-        noEff $ state
+      let (Effect m a) = SetUpdate.update action settingsScreen
+      in noEff $ state {State.screen = State.SettingsScreen m}
       -- noEff $ state {State.screen = State.SettingsScreen newSettingScreenState}
     -- Update.update action settingsScreen
     _ -> noEff state
