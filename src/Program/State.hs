@@ -1,7 +1,8 @@
 module Program.State where
 
 import Data.Time.Clock
-import qualified Settings.State as Settings
+-- import qualified Settings.State as Settings
+import qualified State as State
 
 data State = State
   {
@@ -9,13 +10,13 @@ data State = State
   } deriving(Eq, Show)
 
 data Screen
-  = SettingsScreen Settings.State
-  | SimulationScreen Settings.State
-  -- | EndScreen
+  = SettingsScreen State.State
+  | SimulationScreen State.State
+  | EndScreen
   deriving(Eq, Show)
 
 initDefault :: UTCTime -> State
 initDefault time = State
   {
-  screen = SettingsScreen (Settings.initDefault time)
+  screen = SettingsScreen (State.initDefault time)
   }

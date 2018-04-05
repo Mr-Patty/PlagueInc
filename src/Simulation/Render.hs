@@ -8,7 +8,7 @@ import Miso
 import Miso.String
 import Miso.Html.Element
 
-import Settings.State
+import State
 import Simulation.Update
 
 render :: State -> View Action

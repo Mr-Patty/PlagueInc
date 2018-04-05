@@ -1,4 +1,4 @@
-module Settings.State where
+module State where
 
 
   -- | Miso framework import
@@ -57,6 +57,13 @@ readSeason n =
     12 -> December
     _ -> January
 
+initDefaultCity :: City
+initDefaultCity = City
+  { population = 0
+  ,  seek = 0
+  ,  priv = 0
+  ,  trans = 0
+  }
 
 initDefault :: UTCTime -> State
 initDefault time = State

@@ -27,12 +27,12 @@ library
     , containers
   exposed-modules:
       Lib
+    , State
     , Program.Update
     , Program.Start
     , Program.Render
     , Program.State
     , Settings.Update
-    , Settings.State
     , Settings.Render
     , Simulation.Update
     , Simulation.State
