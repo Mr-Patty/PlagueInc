@@ -21,10 +21,7 @@ update (SettingsScreen action) state =
     State.SettingsScreen settingsScreen ->
       let (Effect m a) = SetUpdate.update action settingsScreen
       in noEff $ state {State.screen = State.SettingsScreen m}
-      -- noEff $ state {State.screen = State.SettingsScreen newSettingScreenState}
-    -- Update.update action settingsScreen
     _ -> noEff state
--- update GoToSettingsScreen state =
 update Check state = state <# do
   putStrLn "Hello World" >> pure NoOp
 update NoOp state = noEff state

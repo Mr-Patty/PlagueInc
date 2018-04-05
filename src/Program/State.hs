@@ -10,7 +10,7 @@ data State = State
 
 data Screen
   = SettingsScreen Settings.State
-  -- | SimulationScreen
+  | SimulationScreen Settings.State
   -- | EndScreen
   deriving(Eq, Show)
 

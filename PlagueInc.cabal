@@ -34,6 +34,9 @@ library
     , Settings.Update
     , Settings.State
     , Settings.Render
+    , Simulation.Update
+    , Simulation.State
+    , Simulation.Render
   other-modules:
       Paths_PlagueInc
   default-language: Haskell2010
