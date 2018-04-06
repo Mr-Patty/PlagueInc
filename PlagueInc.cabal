@@ -25,6 +25,7 @@ library
     , time
     , miso
     , containers
+    , ilist
   exposed-modules:
       Lib
     , State
@@ -35,7 +36,6 @@ library
     , Settings.Update
     , Settings.Render
     , Simulation.Update
-    , Simulation.State
     , Simulation.Render
   other-modules:
       Paths_PlagueInc

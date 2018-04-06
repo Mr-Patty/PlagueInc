@@ -9,12 +9,12 @@ import Data.Time.Clock
 
 
 data State = State
-  {
-  number :: Int,
-  season :: Season,
-  time :: Int,
-  price :: Float,
-  fond :: Double
+  { number :: Int
+  , season :: Season
+  , time :: Int
+  , price :: Float
+  , fond :: Double
+  , change :: Maybe Int
   , cities :: [City]
   }
   deriving (Eq, Show)
@@ -72,5 +72,6 @@ initDefault time = State
   , time = 0
   , price = 0.0
   , fond = 0.0
+  , change = Nothing
   , cities = []
   }
