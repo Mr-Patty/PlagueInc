@@ -16,10 +16,10 @@ data Action
   | SetTime Int
   | SetPrice Float
   | SetFond Double
-  | SetPopulation Int Int
-  | SetSeek Int Double
-  | SetPriv Int Float
-  | SetTrans Int Float
+  | SetPopulation Int Float
+  | SetSick Int Double
+  | SetVaccine Int Float
+  | SetTraffic Int Float
   | Check
   | Next
   | NoOp
@@ -33,22 +33,22 @@ update (SetNumber n) state = state {number = n, cities = setCities (cities state
 update (SetSeason s) state = noEff $ state {season = s}
 update (SetTime t) state = noEff $ state {time = t}
 update (SetPrice p) state = noEff $ state {price = p}
-update (SetFond f) state = noEff $ state {fond = f}
+update (SetFond f) state = noEff $ state {fond = f * 1000}
 update (SetPopulation n p) state =
-    noEff $ state {cities = (imap (\i c -> if i == n then (c {population = p}) else c) (cities state))}
-update (SetSeek n s) state =
-    noEff $ state {cities = (imap (\i c -> if i == n then (c {seek = s}) else c) (cities state))}
-update (SetPriv n p) state =
-    noEff $ state {cities = (imap (\i c -> if i == n then (c {priv = p}) else c) (cities state))}
-update (SetTrans n t) state =
-    noEff $ state {cities = (imap (\i c -> if i == n then (c {trans = t}) else c) (cities state))}
+    noEff $ state {cities = (imap (\i c -> if i == n then (c {population = p * 1000}) else c) (cities state))}
+update (SetSick n s) state =
+    noEff $ state {cities = (imap (\i c -> if i == n then (c {sick = s}) else c) (cities state))}
+update (SetVaccine n p) state =
+    noEff $ state {cities = (imap (\i c -> if i == n then (c {vaccine = p}) else c) (cities state))}
+update (SetTraffic n t) state =
+    noEff $ state {cities = (imap (\i c -> if i == n then (c {trafficIn = t}) else c) (cities state))}
 update Next state = noEff state
 update NoOp state = noEff state
 
 setCities :: [City] -> Int -> [City]
 setCities cities n =
   if m <= n then
-    cities ++ (fmap (\_ -> initDefaultCity) [m..(n - m)])
+    cities ++ (fmap (\_ -> initDefaultCity) [m..(n - m - 1)])
   else
     Prelude.take n cities
   where

@@ -14,17 +14,18 @@ data State = State
   , time :: Int
   , price :: Float
   , fond :: Double
-  , change :: Maybe Int
+  , isFocus :: Maybe Int
   , cities :: [City]
   }
   deriving (Eq, Show)
 
 data City = City
   {
-  population :: Int,
-  seek :: Double,
-  priv :: Float,
-  trans :: Float
+  population :: Float,
+  sick :: Double,
+  vaccine :: Float,
+  trafficIn :: Float,
+  trafficOut :: Float
   }
   deriving (Eq, Show)
 
@@ -59,10 +60,11 @@ readSeason n =
 
 initDefaultCity :: City
 initDefaultCity = City
-  { population = 0
-  ,  seek = 0
-  ,  priv = 0
-  ,  trans = 0
+  { population = 0.1
+  , sick = 0
+  , vaccine = 0
+  , trafficIn = 0.3
+  , trafficOut = 0.3
   }
 
 initDefault :: UTCTime -> State
@@ -72,6 +74,6 @@ initDefault time = State
   , time = 0
   , price = 0.0
   , fond = 0.0
-  , change = Nothing
+  , isFocus = Nothing
   , cities = []
   }

@@ -16,8 +16,8 @@ data Action
 
 update :: Action -> State -> Effect Action State
 update (NoOp) state = noEff $ state
-update (Click n) state = noEff $ state {change = Just n}
-update (Ok n) state = noEff $ state {change = Nothing}
-update (SetInject n priv) state = noEff $
-  state {cities = (imap (\i c -> if i == n then (c {priv = priv}) else c) (cities state))}
+update (Click n) state = noEff $ state {isFocus = Just n}
+update (Ok n) state = noEff $ state {isFocus = Nothing}
+update (SetInject n vaccine) state = noEff $
+  state {cities = (imap (\i c -> if i == n then (c {vaccine = vaccine}) else c) (cities state))}
 update _ state = noEff state

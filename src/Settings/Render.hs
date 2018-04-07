@@ -9,6 +9,7 @@ module Settings.Render where
 import Miso
 import Miso.String
 import Miso.Html.Element
+import qualified Data.Map as M
 
 import State
 import Settings.Update
@@ -16,10 +17,14 @@ import Settings.Update
 
 render :: State -> View Action
 render state =
-  table_ [align_ "center"]
+  table_
+  [ align_ "center"
+  , width_ "300"
+  , height_ "500"
+  ]
     [ td_
       [
-        align_ "center"
+        align_ "center", width_ "300", height_ "500"
       ]
       [
       -- text $ ms "+"
@@ -28,25 +33,25 @@ render state =
           , input_ [onChange (\m -> SetNumber $ read $ checkString $ fromMisoString m)]
           ]
       , tr_ []
-          [ div_ [] [text "Сезон года: "]
+          [ div_ [] [text "Сезон года(1-12): "]
           , input_ [onChange (\m -> SetSeason $ readSeason $ read $ checkString $ fromMisoString m)]
           ]
       , tr_ []
-          [ div_ [] [text "Период моделирования: "]
+          [ div_ [] [text "Период моделирования(в днях): "]
           , input_ [onChange (\m -> SetTime $ read $ checkString $ fromMisoString m)]
           ]
       , tr_ []
-          [ div_ [] [text "Стоимость 1-й прививки: "]
+          [ div_ [] [text "Стоимость 1-й прививки(в тыс.): "]
           , input_ [onChange (\m -> SetPrice $ read $ checkString $ fromMisoString m)]
           ]
       , tr_ []
-          [ div_ [] [text "Денежный фонд: "]
+          [ div_ [] [text "Денежный фонд(в мл.): "]
           , input_ [onChange (\m -> SetFond $ read $ checkString $ fromMisoString m)]
           ]
       , div_ [] [button_ [onClick $ Next] [text "Далее"]]
       ],
       td_ []
-      (fmap (\x -> renderCitySetting x) [1..(number state)])
+      (fmap (\x -> renderCitySetting x) [0..(number state - 1)])
     ]
 
 checkString :: String -> String
@@ -57,22 +62,22 @@ checkString str = str
 renderCitySetting :: Int -> View Action
 renderCitySetting n =
   table_ []
-  [ text $ ms $ "Город №" ++ (show n)
+  [ text $ ms $ "Город № " ++ (show $ n + 1)
   , tr_ []
-    [ div_ [] [text "Численность населения: "]
+    [ div_ [] [text "Численность населения(в мл., максимум 15мл.): "]
     , input_ [onChange (\m -> SetPopulation n $ read $ checkString $ fromMisoString m )]
     ]
   , tr_ []
     [ div_ [] [text "% больных: "]
-    , input_ [onChange (\m -> SetSeek n $ read $ checkString $ fromMisoString m )]
+    , input_ [onChange (\m -> SetSick n $ read $ checkString $ fromMisoString m )]
     ]
   , tr_ []
     [ div_ [] [text "% привитых: "]
-    , input_ [onChange (\m -> SetPriv n $ read $ checkString $ fromMisoString m )]
+    , input_ [onChange (\m -> SetVaccine n $ read $ checkString $ fromMisoString m )]
     ]
   , tr_ []
-    [ div_ [] [text "Насыщенность транспортного сообщения: "]
-    , input_ [onChange (\m -> SetTrans n $ read $ checkString $ fromMisoString m )]
+    [ div_ [] [text "Насыщенность транспортного сообщения(в %): "]
+    , input_ [onChange (\m -> SetTraffic n $ read $ checkString $ fromMisoString m )]
     ]
   , hr_ []
   ]
