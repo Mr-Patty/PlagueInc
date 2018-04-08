@@ -22,7 +22,7 @@ data State = State
 data City = City
   {
   population :: Float,
-  sick :: Double,
+  sick :: Float,
   vaccine :: Float,
   trafficIn :: Float,
   trafficOut :: Float
@@ -57,6 +57,9 @@ readSeason n =
     11 -> November
     12 -> December
     _ -> January
+
+clamp :: Ord a => a -> a -> a -> a
+clamp mn mx = max mn . min mx
 
 initDefaultCity :: City
 initDefaultCity = City

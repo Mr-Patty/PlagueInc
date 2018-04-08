@@ -17,7 +17,7 @@ data Action
   | SetPrice Float
   | SetFond Double
   | SetPopulation Int Float
-  | SetSick Int Double
+  | SetSick Int Float
   | SetVaccine Int Float
   | SetTraffic Int Float
   | Check
@@ -35,13 +35,13 @@ update (SetTime t) state = noEff $ state {time = t}
 update (SetPrice p) state = noEff $ state {price = p}
 update (SetFond f) state = noEff $ state {fond = f * 1000}
 update (SetPopulation n p) state =
-    noEff $ state {cities = (imap (\i c -> if i == n then (c {population = p * 1000}) else c) (cities state))}
+    noEff $ state {cities = (imap (\i c -> if i == n then (c {population = (clamp 0 15 p) * 1000}) else c) (cities state))}
 update (SetSick n s) state =
-    noEff $ state {cities = (imap (\i c -> if i == n then (c {sick = s}) else c) (cities state))}
+    noEff $ state {cities = (imap (\i c -> if i == n then (c {sick = clamp 0 1 s}) else c) (cities state))}
 update (SetVaccine n p) state =
-    noEff $ state {cities = (imap (\i c -> if i == n then (c {vaccine = p}) else c) (cities state))}
+    noEff $ state {cities = (imap (\i c -> if i == n then (c {vaccine = clamp 0 1 p}) else c) (cities state))}
 update (SetTraffic n t) state =
-    noEff $ state {cities = (imap (\i c -> if i == n then (c {trafficIn = t}) else c) (cities state))}
+    noEff $ state {cities = (imap (\i c -> if i == n then (c {trafficIn = clamp 0 1 t}) else c) (cities state))}
 update Next state = noEff state
 update NoOp state = noEff state
 

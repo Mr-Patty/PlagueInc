@@ -23,7 +23,10 @@ wrap :: Float
 wrap = 400
 
 coefRadPop :: Float
-coefRadPop = 50
+coefRadPop = 10
+
+coefRadSick :: Float
+coefRadSick = 4
 
 render :: State -> View Action
 render state =
@@ -63,26 +66,28 @@ oneTown isFocus count i city =
     [
     case isFocus of
       Nothing -> town city i
-      (Just m) -> if m == i then changeCity city i else town city i
+      (Just m) -> if m == i then focusCity city i else town city i
     ]
     where
       f = 2.0 * pi * (fromIntegral i) / (fromIntegral count)
       left = 400.0 + wrap + radius * (sin f)
       top = wrap + radius * (cos f)
 
-changeCity :: City -> Int -> View Action
-changeCity city n =
+focusCity :: City -> Int -> View Action
+focusCity city n =
   table_ [align_ "center", Miso.width_ (ms $ show $ 2 * radius), Miso.height_ (ms $ show $ 2 * radius)]
     [ td_
       [
         align_ "center"
       ]
-      [
-        tr_ []
-          [ div_ [] [text $ ms $ "Число привитых: " ++ (show $ vaccine city)]
+      [ tr_ []
+          [ div_ [] [text $ ms $ "Число жителей: " ++ (show $ (population city) * 1000)]
           ]
       , tr_ []
-          [ div_ [] [text $ ms $ "Заболевшие: " ++ (show $ sick city)]
+          [ div_ [] [text $ ms $ "Число привитых: " ++ (show $ (vaccine city) * (population city) * 1000)]
+          ]
+      , tr_ []
+          [ div_ [] [text $ ms $ "Заболевшие: " ++ (show $ (sick city) * (population city) * 1000)]
           ]
       , tr_ []
           [ div_ [] [text "Кол-во прививок: "]
@@ -92,24 +97,25 @@ changeCity city n =
       ]
     ]
   where
-    radius = population city * coefRadPop
+    radius = clamp 50 150 $ population city / 1000 * coefRadPop
 
 town :: City -> Int -> View Action
 town city n =
   svg_ [Miso.Svg.height_ (ms $ show $ 2 * radiusP), Miso.Svg.width_ (ms $ show $ 2 * radiusP), onClick (Click n) ]
     [
     circle_ [ cx_ (ms $ show $ radiusP), cy_ (ms $ show $ radiusP), r_ (ms $ radiusP), stroke_ "black", strokeWidth_ "1", fill_ "white" ] [],
-    circle_ [ cx_ (ms $ show $ radiusP), cy_ (ms $ show $ radiusP), r_ (ms $ radiusS), fill_ "red" ] []
+    circle_ [ cx_ (ms $ show $ radiusP), cy_ (ms $ show $ radiusP), r_ (ms $ radiusS), fill_ "red" ] [],
+    text_ [ dx_ (ms $ show $ radiusP), dy_ (ms $ show $ radiusP), fill_ "black"] [text $ ms $ (show $ sick city * 100) ++ "%"]
     ]
   where
-    radiusP = population city * coefRadPop
-    radiusS = sick city * 40
+    radiusP = clamp 50 150 $ population city / 1000 * coefRadPop
+    radiusS = clamp 0 100 $ (sick city) * (population city) / 1000 * coefRadPop
 
 header :: State -> View Action
 header state =
   table_ [align_ "left"]
-    [ tr_ [] [text $ ms $ "Остаток денежного фонда: " ++ (show $ fond state)]
-    , tr_ [] [text $ ms $ "Стоимость прививки: " ++ (show $ price state)]
+    [ tr_ [] [text $ ms $ "Остаток денежного фонда: $" ++ (show $ fond state * 1000)]
+    , tr_ [] [text $ ms $ "Стоимость прививки: $" ++ (show $ price state * 1000)]
     , tr_ [] [text $ ms $ "Оставшееся время: " ++ (show $ time state)]
     , tr_ []
       [ td_ [] [button_ [onClick $ Finish] [text "Закончить"]]
