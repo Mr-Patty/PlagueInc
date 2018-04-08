@@ -17,7 +17,7 @@ import State
 import Simulation.Update
 
 radius :: Float
-radius = 300
+radius = 500
 
 wrap :: Float
 wrap = 400
@@ -71,7 +71,7 @@ oneTown isFocus count i city =
     where
       f = 2.0 * pi * (fromIntegral i) / (fromIntegral count)
       left = 400.0 + wrap + radius * (sin f)
-      top = wrap + radius * (cos f)
+      top = 50.0 + wrap + radius * (cos f)
 
 focusCity :: City -> Int -> View Action
 focusCity city n =
@@ -84,7 +84,7 @@ focusCity city n =
           [ div_ [] [text $ ms $ "Число жителей: " ++ (show $ (population city) * 1000)]
           ]
       , tr_ []
-          [ div_ [] [text $ ms $ "Число привитых: " ++ (show $ (vaccine city) * (population city) * 1000)]
+          [ div_ [] [text $ ms $ "Число привитых: " ++ (show $ (immune city) * (population city) * 1000)]
           ]
       , tr_ []
           [ div_ [] [text $ ms $ "Заболевшие: " ++ (show $ (sick city) * (population city) * 1000)]

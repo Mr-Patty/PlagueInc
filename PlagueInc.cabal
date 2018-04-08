@@ -26,6 +26,7 @@ library
     , miso
     , containers
     , ilist
+    , random
   exposed-modules:
       Lib
     , State

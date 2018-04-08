@@ -1,6 +1,7 @@
 module Program.State where
 
 import Data.Time.Clock
+import System.Random
 -- import qualified Settings.State as Settings
 import qualified State as State
 
@@ -15,7 +16,7 @@ data Screen
   | EndScreen
   deriving(Eq, Show)
 
-initDefault :: UTCTime -> State
+initDefault :: StdGen -> State
 initDefault time = State
   {
   screen = SettingsScreen (State.initDefault time)

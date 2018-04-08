@@ -8,6 +8,7 @@ module Program.Start where
 import Miso
 import Miso.String
 import Data.Time.Clock
+import System.Random
 
 import qualified Program.State as State
 import qualified Program.Update as Update
@@ -17,7 +18,8 @@ import qualified Program.Render as Render
 start :: IO ()
 start = do
     t2 <- getCurrentTime
-    let model = State.initDefault t2
+    gen <- newStdGen
+    let model = State.initDefault gen
     startApp App { model = model, ..}
   where
     initialAction = Update.Check -- initial action to be executed on application load

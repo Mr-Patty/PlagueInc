@@ -5,8 +5,10 @@ module Settings.Update where
 import Prelude
 import Miso
 import Miso.String
+import Data.List
 import Data.Time.Clock
 import Data.List.Index
+import System.Random
 
 import State
 
@@ -15,11 +17,12 @@ data Action
   | SetSeason Season
   | SetTime Int
   | SetPrice Float
-  | SetFond Double
+  | SetFond Float
   | SetPopulation Int Float
   | SetSick Int Float
-  | SetVaccine Int Float
+  | SetImmune Int Float
   | SetTraffic Int Float
+  | Random
   | Check
   | Next
   | NoOp
@@ -38,12 +41,23 @@ update (SetPopulation n p) state =
     noEff $ state {cities = (imap (\i c -> if i == n then (c {population = (clamp 0 15 p) * 1000}) else c) (cities state))}
 update (SetSick n s) state =
     noEff $ state {cities = (imap (\i c -> if i == n then (c {sick = clamp 0 1 s}) else c) (cities state))}
-update (SetVaccine n p) state =
-    noEff $ state {cities = (imap (\i c -> if i == n then (c {vaccine = clamp 0 1 p}) else c) (cities state))}
+update (SetImmune n p) state =
+    noEff $ state {cities = (imap (\i c -> if i == n then (c {immune = clamp 0 1 p}) else c) (cities state))}
 update (SetTraffic n t) state =
     noEff $ state {cities = (imap (\i c -> if i == n then (c {trafficIn = clamp 0 1 t}) else c) (cities state))}
 update Next state = noEff state
 update NoOp state = noEff state
+update Random state = noEff $
+  state {cities = newCities, gen = g}
+  where
+    (g, newCities) = Data.List.mapAccumL setR (gen state) (cities state)
+    setR g0 city = (g4, newC)
+      where
+        (pop, g1) = randomR (5 :: Int, 15) g0
+        (s, g2) = randomR (0 :: Float, 1) g1
+        (imm, g3) = randomR (0 :: Float, (1 - s)) g2
+        (traff, g4) = randomR (0 :: Float, 1) g3
+        newC = city {population = (fromIntegral pop) * 1000, sick = s, immune = imm, trafficIn = traff}
 
 setCities :: [City] -> Int -> [City]
 setCities cities n =

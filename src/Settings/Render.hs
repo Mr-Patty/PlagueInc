@@ -62,7 +62,8 @@ checkString str = str
 renderCitySetting :: Int -> View Action
 renderCitySetting n =
   table_ []
-  [ text $ ms $ "Город № " ++ (show $ n + 1)
+  [ tr_ [] [button_ [onClick $ Random] [text "Set all random"]]
+  , text $ ms $ "Город № " ++ (show $ n + 1)
   , tr_ []
     [ div_ [] [text "Численность населения(в мл., максимум 15мл.): "]
     , input_ [onChange (\m -> SetPopulation n $ read $ checkString $ fromMisoString m )]
@@ -73,7 +74,7 @@ renderCitySetting n =
     ]
   , tr_ []
     [ div_ [] [text "% привитых: "]
-    , input_ [onChange (\m -> SetVaccine n $ read $ checkString $ fromMisoString m )]
+    , input_ [onChange (\m -> SetImmune n $ read $ checkString $ fromMisoString m )]
     ]
   , tr_ []
     [ div_ [] [text "Насыщенность транспортного сообщения(в %): "]
