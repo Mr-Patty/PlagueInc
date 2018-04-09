@@ -39,5 +39,5 @@ timeSub sink = do
 
 timeUpdate :: Sub Update.Action
 timeUpdate sink = forever $ do
-  threadDelay 100000
+  threadDelay 500000
   sink Update.NextDay >> return ()

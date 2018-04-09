@@ -26,39 +26,48 @@ data Action =
 update :: Action -> PState.State -> Effect Action PState.State
 update (NextDay) state =
   case PState.screen state of
-    PState.SimulationScreen simState -> if (State.startWeek simState) then
-        let (Effect m a) = SimUpdate.update SimUpdate.NextDay simState
-        in noEff $ state {PState.screen = PState.SimulationScreen m}
-      else noEff state
+    PState.SimulationScreen simState ->
+      if (State.time simState) - (State.startTime simState) <= 0 then
+        noEff $ state {PState.screen = PState.ResultScreen}
+      else
+        if (State.startWeek simState) then
+          let (Effect m a) = SimUpdate.update SimUpdate.NextDay simState
+          in noEff $ state {PState.screen = PState.SimulationScreen m}
+        else noEff state
     _ -> noEff state
+
 update (SettingsScreen SetUpdate.Next) state =
   case (PState.screen state) of
     PState.SettingsScreen settingsScreen  ->
       noEff $ state {PState.screen = PState.SimulationScreen settingsScreen }
     _ -> noEff state
+
 update (SettingsScreen action) state =
   case (PState.screen state) of
     PState.SettingsScreen settingsScreen ->
       let (Effect m a) = SetUpdate.update action settingsScreen
       in noEff $ state {PState.screen = PState.SettingsScreen m}
     _ -> noEff state
+
 update (SimulationScreen SimUpdate.Finish) state =
   case (PState.screen state) of
     PState.SimulationScreen simState ->
-      if (State.time simState) - (State.startTime simState) == 0 then
+      if (State.time simState) - (State.startTime simState) <= 0 then
         noEff $ state {PState.screen = PState.ResultScreen}
       else
         let (Effect m a) = SimUpdate.update SimUpdate.NextDay simState
         in state {PState.screen = PState.SimulationScreen m} <# do
-          threadDelay 10000
+          threadDelay 100000
           return (SimulationScreen SimUpdate.Finish)
     otherwise -> noEff state
+
 update (SimulationScreen action) state =
   case (PState.screen state) of
     PState.SimulationScreen simulationScreen ->
       let (Effect m a) = SimUpdate.update action simulationScreen
       in noEff $ state {PState.screen = PState.SimulationScreen m}
     _ -> noEff state
+
 update Check state = state <# do
   putStrLn "Hello World" >> pure NoOp
 update NoOp state = noEff state

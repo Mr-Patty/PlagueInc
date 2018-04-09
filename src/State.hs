@@ -7,12 +7,13 @@ import Miso.String
 
 import Data.Time.Clock
 import System.Random
+import Data.List
 
 workable :: Float
 workable = 0.65
 
 duty :: Float
-duty = 500
+duty = 0.05
 
 instance Eq StdGen where
   g1 == g2 = (show g1) == (show g2)
@@ -42,6 +43,7 @@ data City = City
   , vaccinated :: [(Int, Int)] -- число вакцинированых, показывает сколько недель назад произошла вакцинация
   , trafficIn :: Float
   , trafficOut :: Float
+  , isEpidemic :: Bool
   }
   deriving (Eq, Show)
 
@@ -57,14 +59,16 @@ class World state where
 
 class Town town where
   -- check :: town -> Bool
-  -- recalculation :: town -> town
+  calculation :: Season ->  StdGen -> town -> (StdGen, town)
   tax :: Float -> town -> Float
 
 class Department state where
   taxPayments :: state -> state
 
 instance World State where
-  recalculation state = state
+  recalculation state =
+    let (g, newCities) = Data.List.mapAccumL (calculation $ season state) (gen state) (cities state)
+    in state {gen = g, cities = newCities}
 
   nextDay state =
     let
@@ -72,7 +76,10 @@ instance World State where
       -- newTime = (time state) - 1
       newTime = ((startTime state) + 1)
       newTimeDiffWeek = (timeDiffWeek state) + 1
+      newTimeDiffMonth = (timeDiffMonth state) + 1
+      newTimeDiffYear = (timeDiffYear state) + 1
       newStartWeek = if newTimeDiffWeek `div` 7 /= 0 then False else (startWeek state)
+      newSeason = if newTimeDiffMonth `div` 30 /= 0 then nextMonth (season state) else (season state)
       -- newSeason =
     in
       (recalculation . taxPayments $ state)
@@ -80,6 +87,9 @@ instance World State where
       , startTime = newTime
       , timeDiffWeek = newTimeDiffWeek `mod` 7
       , startWeek = newStartWeek
+      , timeDiffMonth = newTimeDiffMonth `mod` 30
+      , timeDiffYear = newTimeDiffYear `mod` 360
+      , season = newSeason
       }
 
 instance Town City where
@@ -92,9 +102,10 @@ instance Town City where
           (Just n) -> n
           Nothing -> 0
 
-  -- recalculation town =
-  --   let
-  --
+  calculation season gen town = (newGen, town)
+    where
+      (_, newGen) = randomR (0 :: Int, 10) gen
+
 
 instance Department State where
   taxPayments state =
@@ -103,8 +114,8 @@ instance Department State where
       func s =
         Prelude.foldl (\b a -> b + tax (price s) a) 0.0 (cities s)
 
-nexMonth :: Season -> Season
-nexMonth season =
+nextMonth :: Season -> Season
+nextMonth season =
   case season of
     January -> February
     February -> March
@@ -181,6 +192,7 @@ initDefaultCity = City
   , vaccinated = []
   , trafficIn = 0.3
   , trafficOut = 0.3
+  , isEpidemic = False
   }
 
 initDefault :: StdGen -> State
