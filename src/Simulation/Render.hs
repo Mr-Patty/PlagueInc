@@ -16,16 +16,16 @@ import Data.List.Index
 import State
 import Simulation.Update
 
-radius :: Float
+radius :: Double
 radius = 400
 
-wrap :: Float
+wrap :: Double
 wrap = 400
 
-coefRadPop :: Float
+coefRadPop :: Double
 coefRadPop = 10
 
-coefRadSick :: Float
+coefRadSick :: Double
 coefRadSick = 4
 
 render :: State -> View Action

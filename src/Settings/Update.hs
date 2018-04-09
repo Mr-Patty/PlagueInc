@@ -16,12 +16,12 @@ data Action
   = SetNumber Int
   | SetSeason Season
   | SetTime Int
-  | SetPrice Float
-  | SetFond Float
-  | SetPopulation Int Float
-  | SetSick Int Float
-  | SetImmune Int Float
-  | SetTraffic Int Float
+  | SetPrice Double
+  | SetFond Double
+  | SetPopulation Int Double
+  | SetSick Int Double
+  | SetImmune Int Double
+  | SetTraffic Int Double
   | Random
   | Check
   | Next
@@ -40,7 +40,13 @@ update (SetFond f) state = noEff $ state {fond = f * 1000}
 update (SetPopulation n p) state =
     noEff $ state {cities = (imap (\i c -> if i == n then (c {population = (clamp 0 15 p) * 1000}) else c) (cities state))}
 update (SetSick n s) state =
-    noEff $ state {cities = (imap (\i c -> if i == n then (c {sick = clamp 0 1 s}) else c) (cities state))}
+    noEff $ state {cities = (imap (\i c ->
+    let
+      setSick = clamp 0 1 s
+      setIll = sickToIll $ setSick * (population c)
+    in
+      if i == n then (c {sick = setSick, ill = setIll}) else c
+      ) (cities state))}
 update (SetImmune n p) state =
     noEff $ state {cities = (imap (\i c -> if i == n then (c {immune = clamp 0 1 p}) else c) (cities state))}
 update (SetTraffic n t) state =
@@ -54,10 +60,11 @@ update Random state = noEff $
     setR g0 city = (g4, newC)
       where
         (pop, g1) = randomR (5 :: Int, 15) g0
-        (s, g2) = randomR (0 :: Float, 1) g1
-        (imm, g3) = randomR (0 :: Float, (1 - s)) g2
-        (traff, g4) = randomR (0 :: Float, 1) g3
-        newC = city {population = (fromIntegral pop) * 1000, sick = s, immune = imm, trafficIn = traff}
+        (s, g2) = randomR (0 :: Double, 0.45) g1
+        (imm, g3) = randomR (0 :: Double, (1 - s)) g2
+        (traff, g4) = randomR (0 :: Double, 1) g3
+        setIll = sickToIll $ s * ((fromIntegral pop) * 1000)
+        newC = city {population = (fromIntegral pop) * 1000, sick = s, immune = imm, trafficIn = traff, ill = setIll}
 
 setCities :: [City] -> Int -> [City]
 setCities cities n =

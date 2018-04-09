@@ -9,10 +9,10 @@ import Data.Time.Clock
 import System.Random
 import Data.List
 
-workable :: Float
+workable :: Double
 workable = 0.65
 
-duty :: Float
+duty :: Double
 duty = 0.05
 
 instance Eq StdGen where
@@ -27,8 +27,8 @@ data State = State
   , timeDiffMonth :: Int
   , timeDiffYear :: Int
   , startWeek :: Bool
-  , price :: Float
-  , fond :: Float
+  , price :: Double
+  , fond :: Double
   , isFocus :: Maybe Int
   , cities :: [City]
   , gen :: StdGen
@@ -36,13 +36,14 @@ data State = State
   deriving (Eq, Show)
 
 data City = City
-  { population :: Float
-  , sick :: Float
-  , immune :: Float
+  { population :: Double
+  , sick :: Double
+  , immune :: Double
   , vaccine :: Maybe Int
   , vaccinated :: [(Int, Int)] -- число вакцинированых, показывает сколько недель назад произошла вакцинация
-  , trafficIn :: Float
-  , trafficOut :: Float
+  , ill :: [(Double, Int)]
+  , trafficIn :: Double
+  , trafficOut :: Double
   , isEpidemic :: Bool
   }
   deriving (Eq, Show)
@@ -60,7 +61,7 @@ class World state where
 class Town town where
   -- check :: town -> Bool
   calculation :: Season ->  StdGen -> town -> (StdGen, town)
-  tax :: Float -> town -> Float
+  tax :: Double -> town -> Double
 
 class Department state where
   taxPayments :: state -> state
@@ -82,7 +83,7 @@ instance World State where
       newSeason = if newTimeDiffMonth `div` 30 /= 0 then nextMonth (season state) else (season state)
       -- newSeason =
     in
-      (recalculation . taxPayments $ state)
+      (recalculation $ taxPayments $ state)
       { cities = newCities
       , startTime = newTime
       , timeDiffWeek = newTimeDiffWeek `mod` 7
@@ -102,10 +103,36 @@ instance Town City where
           (Just n) -> n
           Nothing -> 0
 
-  calculation season gen town = (newGen, town)
+  calculation season gen town = (newGen, newTown)
     where
-      (_, newGen) = randomR (0 :: Int, 10) gen
+      numSick = (population town) * (sick town)
+      numImm = (population town) * (immune town)
+      monthCoef = morbidity season
+      numNotImm = (population town) * (1 - (immune town) - (sick town))
+      vaccinatedTmp = Data.List.map (\(num,nDay) -> (num, nDay + 1)) (vaccinated town)
+      newImm = Data.List.foldl (\s (num, nDay) -> if nDay `div` 7 >= 3 then s + (fromIntegral num) else s) 0.0 vaccinatedTmp
+      newVaccinated = (fromMaybe $ vaccine town) ++ Data.List.filter (\(num, nDay) -> nDay `div` 7 < 3) vaccinatedTmp
+      globalCoef = (trafficIn town) * monthCoef * numSick
+      (localCoef, newGen) = randomR (0 :: Double, globalCoef) gen --
+      newCountSick = numNotImm * localCoef -- need upgrade
+      healTmp = Data.List.map (\(num,nDay) -> (num, nDay - 1)) (ill town)
+      heal = Data.List.foldl (\s (num, nDay) -> if nDay <= 0 then s + num else s) 0.0 healTmp
+      newIll = (sickToIll newCountSick) ++ Data.List.filter (\(num, nDay) -> nDay > 0) healTmp
+      newSick = illToDouble newIll
+      newTown =
+        town
+        { immune = (newImm + numImm + heal) / (population town)
+        , vaccinated = newVaccinated
+        , sick = newSick / (population town)
+        }
 
+      illToDouble :: [(Double, Int)] -> Double
+      illToDouble [] = 0
+      illToDouble ((n,_):xs) = n + illToDouble xs
+
+      fromMaybe :: Maybe Int -> [(Int, Int)]
+      fromMaybe (Just n) = [(n, 0)]
+      fromMaybe Nothing = []
 
 instance Department State where
   taxPayments state =
@@ -113,6 +140,30 @@ instance Department State where
     where
       func s =
         Prelude.foldl (\b a -> b + tax (price s) a) 0.0 (cities s)
+
+sickToIll :: Double -> [(Double, Int)]
+sickToIll count =
+  let
+    w2 = count * 0.6
+    w3 = count * 0.15
+    w1 = count * 0.25
+  in [(w1, 7), (w2, 14), (w3, 21)]
+
+morbidity :: Season -> Double
+morbidity season =
+  case season of
+    January -> 0.7
+    February -> 0.85
+    March -> 1.0
+    April -> 0.85
+    May -> 0.7
+    June -> 0.55
+    July -> 0.4
+    August -> 0.25
+    September -> 0.1
+    October -> 0.25
+    November -> 0.4
+    December -> 0.55
 
 nextMonth :: Season -> Season
 nextMonth season =
@@ -190,6 +241,7 @@ initDefaultCity = City
   , immune = 0
   , vaccine = Nothing
   , vaccinated = []
+  , ill = []
   , trafficIn = 0.3
   , trafficOut = 0.3
   , isEpidemic = False

@@ -13,7 +13,7 @@ data State = State
 data Screen
   = SettingsScreen State.State
   | SimulationScreen State.State
-  | ResultScreen 
+  | ResultScreen
   deriving(Eq, Show)
 
 initDefault :: StdGen -> State

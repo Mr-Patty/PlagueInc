@@ -23,6 +23,9 @@ update (SetInject n vaccine) state = noEff $
   state {cities = (imap (\i c -> if i == n then (c {vaccine = Just vaccine}) else c) (cities state))}
 update (NextDay) state =
   noEff $ nextDay state
+
+  -- state <# do
+  --   putStrLn "Hello World" >> pure NoOp
 update (Next) state = noEff $
   state {startWeek = True}
 update _ state = noEff state
