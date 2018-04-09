@@ -17,7 +17,7 @@ import State
 import Simulation.Update
 
 radius :: Float
-radius = 500
+radius = 400
 
 wrap :: Float
 wrap = 400
@@ -108,7 +108,7 @@ town city n =
     text_ [ dx_ (ms $ show $ radiusP), dy_ (ms $ show $ radiusP), fill_ "black"] [text $ ms $ (show $ sick city * 100) ++ "%"]
     ]
   where
-    radiusP = clamp 50 150 $ population city / 1000 * coefRadPop
+    radiusP = clamp 50 120 $ population city / 1000 * coefRadPop
     radiusS = clamp 0 100 $ (sick city) * (population city) / 1000 * coefRadPop
 
 header :: State -> View Action
@@ -116,7 +116,7 @@ header state =
   table_ [align_ "left"]
     [ tr_ [] [text $ ms $ "Остаток денежного фонда: $" ++ (show $ fond state * 1000)]
     , tr_ [] [text $ ms $ "Стоимость прививки: $" ++ (show $ price state * 1000)]
-    , tr_ [] [text $ ms $ "Оставшееся время: " ++ (show $ time state)]
+    , tr_ [] [text $ ms $ "Оставшееся время: " ++ (show $ (time state) - (startTime state))]
     , tr_ []
       [ td_ [] [button_ [onClick $ Finish] [text "Закончить"]]
       , td_ [] [button_ [onClick $ Next] [text "Далее"]]
