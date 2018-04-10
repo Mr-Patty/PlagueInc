@@ -28,7 +28,7 @@ update (NextDay) state =
   case PState.screen state of
     PState.SimulationScreen simState ->
       if (State.time simState) - (State.startTime simState) <= 0 then
-        noEff $ state {PState.screen = PState.ResultScreen}
+        noEff $ state {PState.screen = PState.ResultScreen simState}
       else
         if (State.startWeek simState) then
           let (Effect m a) = SimUpdate.update SimUpdate.NextDay simState
@@ -53,7 +53,7 @@ update (SimulationScreen SimUpdate.Finish) state =
   case (PState.screen state) of
     PState.SimulationScreen simState ->
       if (State.time simState) - (State.startTime simState) <= 0 then
-        noEff $ state {PState.screen = PState.ResultScreen}
+        noEff $ state {PState.screen = PState.ResultScreen simState}
       else
         let (Effect m a) = SimUpdate.update SimUpdate.NextDay simState
         in state {PState.screen = PState.SimulationScreen m} <# do
@@ -66,6 +66,22 @@ update (SimulationScreen action) state =
     PState.SimulationScreen simulationScreen ->
       let (Effect m a) = SimUpdate.update action simulationScreen
       in noEff $ state {PState.screen = PState.SimulationScreen m}
+    _ -> noEff state
+
+update (ResultScreen ResUpdate.Restart) state =
+  case (PState.screen state) of
+    PState.ResultScreen resState ->
+      noEff $ state {PState.screen = PState.SettingsScreen newState}
+      where
+        newGen = (State.gen resState)
+        newState = (State.initDefault newGen)
+    _ -> noEff state
+
+update (ResultScreen action) state =
+  case (PState.screen state) of
+    PState.ResultScreen resState ->
+      let (Effect m a) = ResUpdate.update action resState
+      in noEff $ state {PState.screen = PState.ResultScreen m}
     _ -> noEff state
 
 update Check state = state <# do

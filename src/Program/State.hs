@@ -13,11 +13,11 @@ data State = State
 data Screen
   = SettingsScreen State.State
   | SimulationScreen State.State
-  | ResultScreen
+  | ResultScreen State.State
   deriving(Eq, Show)
 
 initDefault :: StdGen -> State
-initDefault time = State
+initDefault gen = State
   {
-  screen = SettingsScreen (State.initDefault time)
+  screen = SettingsScreen (State.initDefault gen)
   }

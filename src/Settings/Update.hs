@@ -31,7 +31,7 @@ data Action
 update :: Action -> State -> Effect Action State
 update Check state = state <# do
   putStrLn "Hello World" >> pure NoOp
-update (SetNumber n) state = state {number = n, cities = setCities (cities state) n} <# do
+update (SetNumber n) state = state {number = n, cities = setCities (cities state) (clamp 1 10 n)} <# do
   putStrLn (show n) >> pure NoOp
 update (SetSeason s) state = noEff $ state {season = s}
 update (SetTime t) state = noEff $ state {time = t}

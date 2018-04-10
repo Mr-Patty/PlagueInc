@@ -26,15 +26,16 @@ render state =
       [
         align_ "center", width_ "300", height_ "500"
       ]
-      [
-      -- text $ ms "+"
-        tr_ []
-          [ div_ [] [text "Число городов: "]
+      [ tr_ []
+        [ div_ [] [text "Настройки эксперимента"]
+        ]
+      ,  tr_ []
+          [ div_ [] [text "Число городов(1-10): "]
           , input_ [onChange (\m -> SetNumber $ read $ checkString $ fromMisoString m)]
           ]
       , tr_ []
           [ div_ [] [text "Сезон года(1-12): "]
-          , input_ [onChange (\m -> SetSeason $ readSeason $ read $ checkString $ fromMisoString m)]
+          , input_ [onChange (\m -> SetSeason $ readSeason $ clamp 1 12 $ read $ checkString $ fromMisoString m)]
           ]
       , tr_ []
           [ div_ [] [text "Период моделирования(в днях): "]

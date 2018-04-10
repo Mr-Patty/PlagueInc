@@ -41,7 +41,7 @@ data City = City
   , immune :: Double
   , vaccine :: Maybe Int
   , vaccinated :: [(Int, Int)] -- число вакцинированых, показывает сколько недель назад произошла вакцинация
-  , ill :: [(Double, Int)]
+  , ill :: [(Int, Int)]
   , trafficIn :: Double
   , trafficOut :: Double
   , isEpidemic :: Bool
@@ -73,7 +73,7 @@ instance World State where
 
   nextDay state =
     let
-      newCities = (cities state)
+      -- newCities = (cities state)
       -- newTime = (time state) - 1
       newTime = ((startTime state) + 1)
       newTimeDiffWeek = (timeDiffWeek state) + 1
@@ -84,8 +84,7 @@ instance World State where
       -- newSeason =
     in
       (recalculation $ taxPayments $ state)
-      { cities = newCities
-      , startTime = newTime
+      { startTime = newTime
       , timeDiffWeek = newTimeDiffWeek `mod` 7
       , startWeek = newStartWeek
       , timeDiffMonth = newTimeDiffMonth `mod` 30
@@ -106,27 +105,50 @@ instance Town City where
   calculation season gen town = (newGen, newTown)
     where
       numSick = (population town) * (sick town)
+
       numImm = (population town) * (immune town)
+
       monthCoef = morbidity season
+
       numNotImm = (population town) * (1 - (immune town) - (sick town))
+
       vaccinatedTmp = Data.List.map (\(num,nDay) -> (num, nDay + 1)) (vaccinated town)
+
       newImm = Data.List.foldl (\s (num, nDay) -> if nDay `div` 7 >= 3 then s + (fromIntegral num) else s) 0.0 vaccinatedTmp
+
       newVaccinated = (fromMaybe $ vaccine town) ++ Data.List.filter (\(num, nDay) -> nDay `div` 7 < 3) vaccinatedTmp
+
       globalCoef = (trafficIn town) * monthCoef * numSick
+
       (localCoef, newGen) = randomR (0 :: Double, globalCoef) gen --
-      newCountSick = numNotImm * localCoef -- need upgrade
-      healTmp = Data.List.map (\(num,nDay) -> (num, nDay - 1)) (ill town)
-      heal = Data.List.foldl (\s (num, nDay) -> if nDay <= 0 then s + num else s) 0.0 healTmp
-      newIll = (sickToIll newCountSick) ++ Data.List.filter (\(num, nDay) -> nDay > 0) healTmp
-      newSick = illToDouble newIll
+
+      newCountSick = round (numNotImm * localCoef / 5000) --
+
+      healTmp = if (isEpidemic town) then (ill town) else Data.List.map (\(num,nDay) -> (num, nDay - 1)) (ill town)
+
+      heal = Data.List.foldl (\s (num, nDay) -> if nDay <= 0 then s + num else s) 0 healTmp
+
+      newIll = (sickToIll $ fromIntegral newCountSick) ++
+        Data.List.filter (\(num, nDay) -> nDay > 0) healTmp
+
+      newSick = clamp 0 (population town) (fromIntegral $ illToDouble newIll)
+
       newTown =
         town
-        { immune = (newImm + numImm + heal) / (population town)
-        , vaccinated = newVaccinated
+        { immune = (clamp 0 (population town) (newImm + numImm + (fromIntegral heal))) / (population town)
+        , vaccinated = minBound newVaccinated
         , sick = newSick / (population town)
+        , ill = minBound newIll
+        , vaccine = Nothing
+        , isEpidemic = if newSick / (population town) > 0.45 then True else False
         }
 
-      illToDouble :: [(Double, Int)] -> Double
+      minBound :: [(Int, Int)] -> [(Int, Int)]
+      minBound asocList
+        | Prelude.length asocList > 0 = asocList
+        | otherwise = []
+
+      illToDouble :: [(Int, Int)] -> Int
       illToDouble [] = 0
       illToDouble ((n,_):xs) = n + illToDouble xs
 
@@ -139,14 +161,15 @@ instance Department State where
     state {fond = (fond state) + (func state)}
     where
       func s =
-        Prelude.foldl (\b a -> b + tax (price s) a) 0.0 (cities s)
+        Prelude.foldl (\b a ->
+        if (isEpidemic a) then 0.0 else b + tax (price s) a) 0.0 (cities s)
 
-sickToIll :: Double -> [(Double, Int)]
+sickToIll :: Double -> [(Int, Int)]
 sickToIll count =
   let
-    w2 = count * 0.6
-    w3 = count * 0.15
-    w1 = count * 0.25
+    w2 = ceiling $ count * 0.6
+    w3 = ceiling $ count * 0.15
+    w1 = ceiling $ count * 0.25
   in [(w1, 7), (w2, 14), (w3, 21)]
 
 morbidity :: Season -> Double
@@ -233,6 +256,10 @@ readSeason n =
 
 clamp :: Ord a => a -> a -> a -> a
 clamp mn mx = max mn . min mx
+
+roundTo2 :: (RealFrac a) => a -> a
+roundTo2 x = fromIntegral f / 100
+                 where f = round (x * 100)
 
 initDefaultCity :: City
 initDefaultCity = City

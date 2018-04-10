@@ -81,16 +81,16 @@ focusCity city n =
         align_ "center"
       ]
       [ tr_ []
-          [ div_ [] [text $ ms $ "Число жителей: " ++ (show $ (population city) * 1000)]
+          [ div_ [] [text $ ms $ "Число жителей: " ++ (show $ roundTo2 $ (population city) * 1000)]
           ]
       , tr_ []
-          [ div_ [] [text $ ms $ "Число привитых: " ++ (show $ (immune city) * (population city) * 1000)]
+          [ div_ [] [text $ ms $ "Число привитых: " ++ (show $ round $ (immune city) * (population city) * 1000)]
           ]
       , tr_ []
-          [ div_ [] [text $ ms $ "Заболевшие: " ++ (show $ (sick city) * (population city) * 1000)]
+          [ div_ [] [text $ ms $ "Заболевшие: " ++ (show $ round $ (sick city) * (population city) * 1000)]
           ]
       , tr_ []
-          [ div_ [] [text "Кол-во прививок: "]
+          [ div_ [] [text "Кол-во прививок(в тыс.): "]
           , input_ [onChange (\m -> SetInject n (read $ checkString $ fromMisoString m))]
           ]
       , div_ [] [button_ [onClick $ Ok n] [text "Ok"]]
@@ -104,8 +104,8 @@ town city n =
   svg_ [Miso.Svg.height_ (ms $ show $ 2 * radiusP), Miso.Svg.width_ (ms $ show $ 2 * radiusP), onClick (Click n) ]
     [
     circle_ [ cx_ (ms $ show $ radiusP), cy_ (ms $ show $ radiusP), r_ (ms $ radiusP), stroke_ "black", strokeWidth_ "1", fill_ "white" ] [],
-    circle_ [ cx_ (ms $ show $ radiusP), cy_ (ms $ show $ radiusP), r_ (ms $ radiusS), fill_ "red" ] [],
-    text_ [ dx_ (ms $ show $ radiusP), dy_ (ms $ show $ radiusP), fill_ "black"] [text $ ms $ (show $ sick city * 100) ++ "%"]
+    circle_ [ cx_ (ms $ show $ radiusP), cy_ (ms $ show $ radiusP), r_ (ms $ radiusS), (if (isEpidemic city) then fill_ "red" else fill_ "yellow") ] [],
+    text_ [ dx_ (ms $ show $ radiusP), dy_ (ms $ show $ radiusP), fill_ "black"] [text $ ms $ (show $ roundTo2 $ sick city * 100) ++ "%"]
     ]
   where
     radiusP = clamp 50 120 $ population city / 1000 * coefRadPop
@@ -114,8 +114,8 @@ town city n =
 header :: State -> View Action
 header state =
   table_ [align_ "left"]
-    [ tr_ [] [text $ ms $ "Остаток денежного фонда: $" ++ (show $ fond state * 1000)]
-    , tr_ [] [text $ ms $ "Стоимость прививки: $" ++ (show $ price state * 1000)]
+    [ tr_ [] [text $ ms $ "Остаток денежного фонда: $" ++ (show $ roundTo2 $ fond state * 1000)]
+    , tr_ [] [text $ ms $ "Стоимость прививки: $" ++ (show $ roundTo2 $ price state * 1000)]
     , tr_ [] [text $ ms $ "Оставшееся время: " ++ (show $ (time state) - (startTime state))]
     , tr_ []
       [ td_ [] [button_ [onClick $ Finish] [text "Закончить"]]

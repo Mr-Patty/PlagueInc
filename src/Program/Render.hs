@@ -14,4 +14,4 @@ render state =
   case State.screen state of
     State.SettingsScreen settingsState -> fmap Update.SettingsScreen $ SettingsRender.render settingsState
     State.SimulationScreen simunaltionState -> fmap Update.SimulationScreen $ SimRender.render simunaltionState
-    State.ResultScreen ->  fmap Update.ResultScreen ResRender.render
+    State.ResultScreen resState ->  fmap Update.ResultScreen $ ResRender.render resState
