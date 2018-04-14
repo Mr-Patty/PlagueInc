@@ -90,7 +90,7 @@ focusCity city n =
           [ div_ [] [text $ ms $ "Заболевшие: " ++ (show $ round $ (sick city) * (population city) * 1000)]
           ]
       , tr_ []
-          [ div_ [] [text "Кол-во прививок(в тыс.): "]
+          [ div_ [] [text "Кол-во прививок: "]
           , input_ [onChange (\m -> SetInject n (read $ checkString $ fromMisoString m))]
           ]
       , div_ [] [button_ [onClick $ Ok n] [text "Ok"]]

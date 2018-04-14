@@ -63,7 +63,7 @@ checkString str = str
 renderCitySetting :: Int -> View Action
 renderCitySetting n =
   table_ []
-  [ tr_ [] [button_ [onClick $ Random] [text "Set all random"]]
+  [ tr_ [] [button_ [onClick $ Random] [text "Выставить все случайно"]]
   , text $ ms $ "Город № " ++ (show $ n + 1)
   , tr_ []
     [ div_ [] [text "Численность населения(в мл., максимум 15мл.): "]

@@ -28,8 +28,7 @@ library
     , ilist
     , random
   exposed-modules:
-      Lib
-    , State
+      State
     , Program.Update
     , Program.Start
     , Program.Render

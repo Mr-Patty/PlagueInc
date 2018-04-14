@@ -18,52 +18,62 @@ duty = 0.05
 instance Eq StdGen where
   g1 == g2 = (show g1) == (show g2)
 
-data State = State
-  { number :: Int
-  , season :: Season
-  , time :: Int
-  , startTime :: Int
-  , timeDiffWeek :: Int
-  , timeDiffMonth :: Int
-  , timeDiffYear :: Int
-  , startWeek :: Bool
-  , price :: Double
-  , fond :: Double
-  , isFocus :: Maybe Int
-  , cities :: [City]
-  , gen :: StdGen
-  }
-  deriving (Eq, Show)
+-- data Maybe a = Nothing | Just a
 
+-- * состояние эксперимента
+data State = State
+  { number :: Int -- ^ количество городов
+  , season :: Season -- ^ сезон/месяц года
+  , time :: Int -- ^ период моделирования
+  , startTime :: Int -- ^ время прошедшее сначала
+  , timeDiffWeek :: Int -- ^ прошедшие недели
+  , timeDiffMonth :: Int -- ^ прошедшие месяцы
+  , timeDiffYear :: Int -- ^ количество года
+  , startWeek :: Bool -- ^ началась ли новая неделя
+  , price :: Double -- ^ стоимость прививки
+  , fond :: Double -- ^ денежный фонд
+  , isFocus :: Maybe Int -- ^ какой город сейчас в фокусе
+  , cities :: [City] -- ^ города
+  , gen :: StdGen -- ^ генератор для случайных чисел
+  } deriving (Eq, Show)
+
+-- * Город
 data City = City
-  { population :: Double
-  , sick :: Double
-  , immune :: Double
-  , vaccine :: Maybe Int
-  , vaccinated :: [(Int, Int)] -- число вакцинированых, показывает сколько недель назад произошла вакцинация
-  , ill :: [(Int, Int)]
-  , trafficIn :: Double
-  , trafficOut :: Double
-  , isEpidemic :: Bool
-  }
-  deriving (Eq, Show)
+  { population :: Double -- ^ население города
+  , sick :: Double -- ^ процент больных
+  , immune :: Double -- ^ процент здоровых
+  , vaccine :: Maybe Int -- ^ количество прививок
+  , vaccinated :: [(Int, Int)] -- ^ число вакцинированых, показывает сколько недель назад произошла вакцинация
+  , ill :: [(Int, Int)] -- ^ число больных, показывает сколько недель болеют
+  , trafficIn :: Double -- ^ трафик города
+  , trafficOut :: Double -- ^ трафик между городами
+  , isEpidemic :: Bool -- ^ началась ли эпидемия
+  } deriving (Eq, Show)
 
 data Season =
   January | February | March | April | May |
   June | July | August | September | October | November | December
   deriving (Eq, Show)
 
+
 class World state where
-  -- check :: state -> Bool
+  -- | Пересчитать актальное состояние
   recalculation :: state -> state
+  -- | Обновить состояние и начать новый день
   nextDay :: state -> state
+  -- | Инициализировать эксперимент
+  initDefault :: StdGen -> state
 
 class Town town where
-  -- check :: town -> Bool
+  -- | Расчиать актальное состояние
   calculation :: Season ->  StdGen -> town -> (StdGen, town)
+  -- | Посчитать налоги
   tax :: Double -> town -> Double
+  -- | Инициализировать город
+  initDefaultCity :: town
 
 class Department state where
+  -- | Расчитать налоги во всех городах
   taxPayments :: state -> state
 
 instance World State where
@@ -92,7 +102,36 @@ instance World State where
       , season = newSeason
       }
 
+  initDefault g = State
+    { number = 0
+    , season = January
+    , time = 0
+    , startTime = 0
+    , timeDiffWeek = 0
+    , timeDiffMonth = 0
+    , timeDiffYear = 0
+    , startWeek = False
+    , price = 0.0
+    , fond = 0.0
+    , isFocus = Nothing
+    , cities = []
+    , gen = g
+    }
+
+
 instance Town City where
+  initDefaultCity = City
+    { population = 0.1
+    , sick = 0
+    , immune = 0
+    , vaccine = Nothing
+    , vaccinated = []
+    , ill = []
+    , trafficIn = 0.3
+    , trafficOut = 0.3
+    , isEpidemic = False
+    }
+
   tax price city =
     workable * healthy * duty - price * (fromIntegral vac)
     where
@@ -114,19 +153,24 @@ instance Town City where
 
       vaccinatedTmp = Data.List.map (\(num,nDay) -> (num, nDay + 1)) (vaccinated town)
 
-      newImm = Data.List.foldl (\s (num, nDay) -> if nDay `div` 7 >= 3 then s + (fromIntegral num) else s) 0.0 vaccinatedTmp
+      newImm = Data.List.foldl
+        (\s (num, nDay) -> if nDay `div` 7 >= 3 then s + (fromIntegral num) else s)
+        0.0 vaccinatedTmp
 
-      newVaccinated = (fromMaybe $ vaccine town) ++ Data.List.filter (\(num, nDay) -> nDay `div` 7 < 3) vaccinatedTmp
+      newVaccinated = (fromMaybe $ vaccine town) ++
+        Data.List.filter (\(num, nDay) -> nDay `div` 7 < 3) vaccinatedTmp
 
       globalCoef = (trafficIn town) * monthCoef * numSick
 
       (localCoef, newGen) = randomR (0 :: Double, globalCoef) gen --
 
-      newCountSick = round (numNotImm * localCoef / 5000) --
+      newCountSick = round (numNotImm * localCoef / 6000) --
 
-      healTmp = if (isEpidemic town) then (ill town) else Data.List.map (\(num,nDay) -> (num, nDay - 1)) (ill town)
+      healTmp = if (isEpidemic town) then (ill town)
+        else Data.List.map (\(num,nDay) -> (num, nDay - 1)) (ill town)
 
-      heal = Data.List.foldl (\s (num, nDay) -> if nDay <= 0 then s + num else s) 0 healTmp
+      heal = Data.List.foldl
+        (\s (num, nDay) -> if nDay <= 0 then s + num else s) 0 healTmp
 
       newIll = (sickToIll $ fromIntegral newCountSick) ++
         Data.List.filter (\(num, nDay) -> nDay > 0) healTmp
@@ -260,33 +304,3 @@ clamp mn mx = max mn . min mx
 roundTo2 :: (RealFrac a) => a -> a
 roundTo2 x = fromIntegral f / 100
                  where f = round (x * 100)
-
-initDefaultCity :: City
-initDefaultCity = City
-  { population = 0.1
-  , sick = 0
-  , immune = 0
-  , vaccine = Nothing
-  , vaccinated = []
-  , ill = []
-  , trafficIn = 0.3
-  , trafficOut = 0.3
-  , isEpidemic = False
-  }
-
-initDefault :: StdGen -> State
-initDefault g = State
-  { number = 0
-  , season = January
-  , time = 0
-  , startTime = 0
-  , timeDiffWeek = 0
-  , timeDiffMonth = 0
-  , timeDiffYear = 0
-  , startWeek = False
-  , price = 0.0
-  , fond = 0.0
-  , isFocus = Nothing
-  , cities = []
-  , gen = g
-  }

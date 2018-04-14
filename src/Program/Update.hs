@@ -20,8 +20,6 @@ data Action =
   | NextDay
   | Check
   | NoOp
-  -- | GoToSimulationScreen
-  -- | SimulationScreen
 
 update :: Action -> PState.State -> Effect Action PState.State
 update (NextDay) state =

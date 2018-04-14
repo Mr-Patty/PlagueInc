@@ -38,7 +38,8 @@ update (SetTime t) state = noEff $ state {time = t}
 update (SetPrice p) state = noEff $ state {price = p}
 update (SetFond f) state = noEff $ state {fond = f * 1000}
 update (SetPopulation n p) state =
-    noEff $ state {cities = (imap (\i c -> if i == n then (c {population = (clamp 0 15 p) * 1000}) else c) (cities state))}
+    noEff $ state {cities = (imap (\i c -> if i == n then
+      (c {population = (clamp 0 15 p) * 1000}) else c) (cities state))}
 update (SetSick n s) state =
     noEff $ state {cities = (imap (\i c ->
     let
@@ -60,11 +61,17 @@ update Random state = noEff $
     setR g0 city = (g4, newC)
       where
         (pop, g1) = randomR (5 :: Int, 15) g0
-        (s, g2) = randomR (0 :: Double, 0.45) g1
+        (s, g2) = randomR (0 :: Double, 0.3) g1
         (imm, g3) = randomR (0 :: Double, (1 - s)) g2
         (traff, g4) = randomR (0 :: Double, 1) g3
         setIll = sickToIll $ s * ((fromIntegral pop) * 1000)
-        newC = city {population = (fromIntegral pop) * 1000, sick = s, immune = imm, trafficIn = traff, ill = setIll}
+        newC = city {
+          population = (fromIntegral pop) * 1000,
+          sick = s,
+          immune = imm,
+          trafficIn = traff,
+          ill = setIll
+          }
 
 setCities :: [City] -> Int -> [City]
 setCities cities n =
